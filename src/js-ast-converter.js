@@ -28,36 +28,45 @@ JSASTConverter.prototype.translate = function () {
 };
 JSASTConverter.prototype._translate = function (ast) {
     if (ast[0][0] === '+') {
-        ast.shift();
-        return {
-            'type': 'CallExpression',
-            'callee': {
-                'type': 'MemberExpression',
-                'computed': false,
-                'object': {
-                    'type': 'ArrayExpression',
-                    'elements': ast.map((function (t) {
-                        return this._translate(t);
-                    }).bind(this))
-                },
-                'property': {
-                    type: 'Identifier',
-                    name: 'reduce'
-                }
-            },
-            'arguments': [
-                {
-                    type: 'Identifier',
-                    name: 'TINYLISP$$opPlus'
-                }
-            ]
-        };
+        return this._generateOperatorAST(ast, 'TINYLISP$$opAdd');
+    } else if (ast[0][0] === '-') {
+        return this._generateOperatorAST(ast, 'TINYLISP$$opSub');
+    } else if (ast[0][0] === '*') {
+        return this._generateOperatorAST(ast, 'TINYLISP$$opMul');
+    } else if (ast[0][0] === '/') {
+        return this._generateOperatorAST(ast, 'TINYLISP$$opDiv');
     } else if (typeof(ast[0]) === 'number') {
         return {"type":"Literal","value":ast[0]};
     } else {
         console.log(ast);
         throw "Unknown expression.";
     }
+};
+JSASTConverter.prototype._generateOperatorAST = function (ast, func) {
+    ast.shift();
+    return {
+        'type': 'CallExpression',
+        'callee': {
+            'type': 'MemberExpression',
+            'computed': false,
+            'object': {
+                'type': 'ArrayExpression',
+                'elements': ast.map((function (t) {
+                    return this._translate(t);
+                }).bind(this))
+            },
+            'property': {
+                type: 'Identifier',
+                name: 'reduce'
+            }
+        },
+        'arguments': [
+            {
+                type: 'Identifier',
+                name: func
+            }
+        ]
+    };
 };
 module.exports = JSASTConverter;
 

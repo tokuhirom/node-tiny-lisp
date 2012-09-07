@@ -34,15 +34,15 @@ Scanner.prototype.scan = function () {
 Scanner.prototype._scan = function () {
     this.src = this.src.replace(/^\s+/, ''); // skip ws.
     switch (this.src[0]) {
-    case '+':
-        this.src = this.src.substr(1);
-        return ['+'];
     case '(':
-        this.src = this.src.substr(1);
-        return ['('];
     case ')':
+    case '+':
+    case '*':
+    case '-':
+    case '/':
+        var c = this.src[0];
         this.src = this.src.substr(1);
-        return [')'];
+        return [c];
     case '0':
     case '1':
     case '2':
