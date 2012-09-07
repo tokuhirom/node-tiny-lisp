@@ -15,8 +15,8 @@ function evaluate(src) {
     var jsast = converter.translate();
     var generator = new Generator(jsast);
     var jssrc = generator.generate();
-    // console.log(jssrc);
-    return eval(jssrc);
+    // console.log(jssrc[0]);
+    return eval(jssrc[0]);
 }
 
 module.exports = {

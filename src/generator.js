@@ -25,13 +25,22 @@ var passes = [
     esmangle.require('lib/pass/reduce-branch-jump')
 ];
 
-function Generator(jsast) {
-    this.jsast = jsast;
+function Generator(jsast, filename) {
+    this.jsast    = jsast;
+    this.filename = filename || '-e';
 }
 Generator.prototype.generate = function() {
     var optimized = esmangle.optimize(this.jsast, passes);
-    var src =  escodegen.generate(esmangle.mangle(optimized));
-    return runtime + src;
+    var mangled = esmangle.mangle(optimized);
+    var src = escodegen.generate(
+        mangled
+    );
+    var srcMap =  escodegen.generate(
+        mangled, {
+            sourceMap: this.filename
+        }
+    );
+    return [runtime + src, srcMap];
 };
 
 module.exports = Generator;
