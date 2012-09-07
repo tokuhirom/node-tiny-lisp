@@ -16,7 +16,10 @@ function JSASTConverter(ast) {
 JSASTConverter.prototype.translate = function () {
     var body = [];
     for (var i=0, l=this.ast.length; i<l; i++) {
-        body.push(this._translate(this.ast[i]));
+        body.push({
+            type: 'ExpressionStatement',
+            expression: this._translate(this.ast[i])
+        });
     }
     return {
         'type': 'Program',
@@ -26,30 +29,28 @@ JSASTConverter.prototype.translate = function () {
 JSASTConverter.prototype._translate = function (ast) {
     if (ast[0][0] === '+') {
         ast.shift();
-        return {'type': 'ExpressionStatement',
-            'expression': {
-                'type': 'CallExpression',
-                'callee': {
-                    'type': 'MemberExpression',
-                    'computed': false,
-                    'object': {
-                        'type': 'ArrayExpression',
-                        'elements': ast.map((function (t) {
-                            return this._translate(t);
-                        }).bind(this))
-                    },
-                    'property': {
-                        type: 'Identifier',
-                        name: 'reduce'
-                    }
+        return {
+            'type': 'CallExpression',
+            'callee': {
+                'type': 'MemberExpression',
+                'computed': false,
+                'object': {
+                    'type': 'ArrayExpression',
+                    'elements': ast.map((function (t) {
+                        return this._translate(t);
+                    }).bind(this))
                 },
-                'arguments': [
-                    {
-                        type: 'Identifier',
-                        name: 'TINYLISP$$opPlus'
-                    }
-                ]
-            }
+                'property': {
+                    type: 'Identifier',
+                    name: 'reduce'
+                }
+            },
+            'arguments': [
+                {
+                    type: 'Identifier',
+                    name: 'TINYLISP$$opPlus'
+                }
+            ]
         };
     } else if (typeof(ast[0]) === 'number') {
         return {"type":"Literal","value":ast[0]};
