@@ -14,6 +14,7 @@ test(function (t) {
     var jsast = converter.translate();
     var generator = new Generator(jsast);
     var jssrc = generator.generate();
+    console.log(jssrc[1]);
     t.equal(eval(jssrc[0]), 11);
     t.end();
 });

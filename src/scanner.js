@@ -1,4 +1,4 @@
-/*jshint node:true, laxcomma:true */
+/*jshint node:true, laxcomma:true, loopfunc:true */
 (function () {
 
 "use strict";
@@ -14,6 +14,8 @@ var TOKENS = {
 
 function Scanner(src) {
     this.src = src;
+    this.lineno = 1;
+    this.col    = 1;
 }
 Object.keys(TOKENS).forEach(function (key) {
     Scanner[key] = TOKENS[key];
@@ -32,7 +34,9 @@ Scanner.prototype.scan = function () {
 };
 
 Scanner.prototype._scan = function () {
-    this.src = this.src.replace(/^\s+/, ''); // skip ws.
+    this._skipWS();
+    if (this.src.length===0) { return; }
+
     switch (this.src[0]) {
     case '(':
     case ')':
@@ -42,7 +46,7 @@ Scanner.prototype._scan = function () {
     case '/':
         var c = this.src[0];
         this.src = this.src.substr(1);
-        return [c];
+        return [c, this.lineno, this.col, this.lineno, ++(this.col)];
     case '0':
     case '1':
     case '2':
@@ -55,11 +59,30 @@ Scanner.prototype._scan = function () {
     case '9':
         var m = this.src.match(/^(0|[1-9][0-9]*(\.[0-9]+)?)/);
         if (m) {
+            var startCol = this.col;
+            this.col += m[0].length;
             this.src = this.src.substr(m[0].length);
-            return [parseInt(m[0], 10)];
+            return [parseInt(m[0], 10), this.lineno, startCol, this.lineno, this.col];
         }
     }
-    throw "Unknown token: " + this.src;
+    throw "Unknown token: " + JSON.stringify(this.src);
+};
+Scanner.prototype._skipWS = function () {
+    var replaced = true;
+    while (replaced) {
+        replaced = false;
+        this.src = this.src.replace(/^[ ]+/, (function (a) {
+            replaced = true;
+            this.col += a.length;
+            return '';
+        }).bind(this));
+        this.src = this.src.replace(/^\n/, (function () {
+            replaced = true;
+            this.lineno++;
+            this.col = 1;
+            return '';
+        }).bind(this));
+    }
 };
 
 module.exports = Scanner;

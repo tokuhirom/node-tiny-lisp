@@ -36,16 +36,39 @@ JSASTConverter.prototype._translate = function (ast) {
     } else if (ast[0][0] === '/') {
         return this._generateOperatorAST(ast, 'TINYLISP$$opDiv');
     } else if (typeof(ast[0]) === 'number') {
-        return {"type":"Literal","value":ast[0]};
+        return {
+            "type":"Literal",
+            "loc": {
+                "start": {
+                    "line": ast[1],
+                    "column": ast[2]
+                },
+                "end": {
+                    "line": ast[3],
+                    "column": ast[4]
+                }
+            },
+            "value":ast[0]
+        };
     } else {
         console.log(ast);
         throw "Unknown expression.";
     }
 };
 JSASTConverter.prototype._generateOperatorAST = function (ast, func) {
-    ast.shift();
+    var op = ast.shift();
     return {
         'type': 'CallExpression',
+        "loc": {
+            "start": {
+                "line": op[1],
+                "column": op[2]
+            },
+            "end": {
+                "line": op[3],
+                "column": op[4]
+            }
+        },
         'callee': {
             'type': 'MemberExpression',
             'computed': false,
